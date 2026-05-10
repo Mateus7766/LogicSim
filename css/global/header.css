@@ -1,0 +1,43 @@
+.header-bg {
+    background-color:#161616;
+    padding-bottom: 20px;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+.header-menu {
+    display: flex;
+    position: relative;
+    flex-wrap: wrap;
+}
+
+.header-submenu  {
+    align-content: center;
+    cursor: pointer;
+}
+
+.header-submenu img {
+    padding: 12px;
+    transition: all 0.3s ease;
+    box-shadow: none;
+    border-radius: 50%;
+}
+
+.header-submenu img:hover {
+    background-color: rgba(60, 64, 63, 0.8);
+    
+}
+.lampada {
+    margin-top: auto;
+    margin-right: 15px;
+    position: absolute;
+    right: 5px;
+    top: 8px;
+}
+
+
+
