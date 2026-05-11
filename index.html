@@ -5,28 +5,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/style.css">
     <link rel="icon" href="./favicon.svg" title="image/svg+xml">
-    <title>Document</title>
+    <title>LogicSim</title>
 </head>
 <body>
-<header class="header-bg">
-    <div class=".header container">
-        <nav aria-label="primaria">
-            <div class="header-menu">
+<header class="header-bg" id="header-menuBG">
+    <div class="header container">
+        <div class="header-menu">
 
-            <div class="header-submenu">
-                <img src="./img/menu.svg" alt="alternativas">
+            <div class="header-btn" id="header-btn">
+                <span></span>
+                <span></span>
+                <span></span>
             </div>
+
+    <nav class="header-nav" id="header-nav" aria-label="primaria">
+        <ul>
+            <li><a href="./">Inicío</a></li>
+            <li><a href="./simulador">Simulador</a></li>
+            <li><a href="./tabela">Tabela Verdade</a></li>
+            <li><a href="./sobre">Sobre</a></li>
+        </ul>
+
+        <div class="header-descricao">
+        <p>Simulador de <br>Circuitos Lógicos</p>
+        <img src="./img/Portas/porta-and.svg" alt="">
+        </div>
+    </nav>
+        <div class="header-descBG" id="header-descBG"></div>        
 
             <a href="./">
-                <img src="./img/LogicSim-Marca.svg" alt="LogicSim">
+                <img src="./img/LogicSim-Marca.svg" alt="LogicSim" >
             </a>
-
+          
                 <div class="lampada">
-                    <img src="./img/lampadas/desligada.svg" alt="">
+                    <img src="./img/lampadas/desligada.svg" alt="" id="imagem">
                 </div>
-            </div>
-        </nav>   
+        </div>
     </div>
 </header>
+
+
+
+    <script src="./js/animação/anima.js"></script>
 </body>
 </html>

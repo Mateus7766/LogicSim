@@ -6,7 +6,7 @@
       stroke-linecap: round;
     }
     .porta-and {
-      fill: #ffffff;
+      fill: transparent;
       stroke: #000000;
       stroke-width: 3;
       stroke-linejoin: round;
