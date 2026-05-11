@@ -1,3 +1,4 @@
+const headerMenu = document.getElementById('header-menu');
 const headerBtn = document.getElementById('header-btn');
 const headerNav = document.getElementById('header-nav');
 const headerDescBG = document.getElementById('header-descBG');
@@ -27,6 +28,7 @@ function fecharMenu() {
     headerDescBG.classList.remove('active');
     body.style.overflow = 'auto';
     menuAberto = false;
+    mudarDePosicao();
 }
 
 headerBtn.addEventListener('click', (e) => {
@@ -38,9 +40,25 @@ headerDescBG.addEventListener('click', () => {
     fecharMenu();
 });
 
-
 headerNav.addEventListener('click', (e) => {
     if (e.target === headerNav) {
         fecharMenu();
     }
 });
+
+function mudarDePosicao(){
+
+    if(menuAberto){
+        headerNav.appendChild(headerBtn);
+        headerBtn.classList.add('active')
+    }else {
+      headerMenu.appendChild(headerBtn);
+      headerBtn.classList.remove('active');
+      headerMenu.insertBefore(headerBtn, headerMenu.firstChild);
+    }
+}
+
+headerBtn.addEventListener('click', mudarDePosicao)
+
+
+
