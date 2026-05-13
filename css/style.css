@@ -5,4 +5,9 @@
 
 /* UTILIDADES*/
 
-@import "./utilidades/componentes.css"
+@import "./utilidades/componentes.css";
+@import "./utilidades/cores.css";
+
+/* PORTASMAIN */
+
+@import "./portasMain/portas.css";

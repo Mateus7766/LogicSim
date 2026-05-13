@@ -1,0 +1,72 @@
+.porta-bg {
+    background-color: var(--cor-11);
+    margin: 40px auto;
+    display: grid;
+    place-items: center;
+    width: 850px;
+    min-height: 600px;
+    padding: 20px;
+    border-radius: 15px;
+}
+
+.porta-intro {
+    display: grid;
+    position: relative;
+    justify-items: center;
+    gap: 30px;
+    width: 100%;
+}
+
+.porta-info {
+    position: absolute;
+    top: -100px;
+    left: 40px;
+    padding-top: 15px;
+}
+
+.porta-logicas-listas {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(140px, 1fr));
+    grid-auto-rows: auto;
+    gap: 20px;
+    width: 100%;
+    max-width: 840px;
+    padding: 0;
+    padding-top: 40px;
+    margin: 0;
+    list-style: none;
+}
+
+.porta-logicas-listas li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.porta-logicas-listas li a {
+    text-decoration: none;
+}
+
+.porta-logicas-listas li p {
+    display: flex;
+    justify-content: center;
+    font-weight: bold;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.porta-logicas-listas li:hover {
+    background-color: var(--cor-p1);
+    border-radius: 8px;
+    transition: 0.3s ease;
+}
+
+.ativo {
+    background-color: var(--cor-p2);
+}
+
+.porta-logicas-listas.hover li:hover{
+    background: var(--cor-11);
+    
+}
+

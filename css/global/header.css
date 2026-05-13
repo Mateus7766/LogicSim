@@ -138,7 +138,7 @@ img {
 }
 
 .header-descricao p {
-    color: #00d4ff;
+    color: var(--cor-4);
     font-size: 12px;
     font-weight: 600;
     margin: 0;
