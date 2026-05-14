@@ -186,6 +186,11 @@ function handleClearSimulator(event) {
         return;
     }
 
+    const shouldClear = window.confirm('Tem certeza que deseja limpar o simulador?');
+    if (!shouldClear) {
+        return;
+    }
+
     clearSimulator();
 }
 
