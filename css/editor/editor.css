@@ -368,6 +368,7 @@ body.menu-fechado .editor-bg {
     cursor: pointer;
 }
 
+/*No JS tem o evento de clique, no renderer linha 150*/
 .input-toggle.active {
     background: rgba(59, 130, 246, 0.5);
     border-color: rgba(59, 130, 246, 0.8);
@@ -409,13 +410,16 @@ body.menu-fechado .editor-bg {
     text-anchor: middle;
     pointer-events: auto;
 }
-
+ 
+/* RESPONSIVO */
+/*PARTE MATEUS */
 @media (max-width: 899px) {
     .editor-bg {
         margin: 20px;
     }
 }
 
+/*PARTE KEVIN*/
 @media(max-width: 500px) {
     .toolbar-btn {
         font-family: 'Courier New', Courier, monospace;

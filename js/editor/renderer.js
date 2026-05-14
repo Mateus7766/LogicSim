@@ -147,6 +147,7 @@ export function renderGate(gate, nodeLayer) {
         return node;
     }
 
+    //input
     const body = document.createElement('div');
     body.className = 'node-body';
 
