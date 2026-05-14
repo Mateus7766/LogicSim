@@ -19,3 +19,7 @@
 /* EDITOR */
 
 @import "./editor/editor.css";
+
+/* SOBRE */
+
+@import "./sobre/sobre.css";

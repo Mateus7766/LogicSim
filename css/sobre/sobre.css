@@ -1,0 +1,27 @@
+.sobre-bg {
+    max-width: 550px;
+    max-height: 400px;
+    display: flex;
+    flex-wrap: wrap;
+    flex:  1 2 250px;
+    background-color: var(--cor-11);
+    margin: 0 auto;
+    margin-top: 80px;
+    border-radius: 50px;
+    padding: 60px;
+}
+
+.sobre-contexto img {
+    margin: 0 auto;
+    max-width: 100%;
+}
+
+.sobre-contexto p {
+    color: var(--cor-4);
+}
+
+@media (max-width: 500px) {
+    .sobre-bg {
+        max-height: 650px;
+    }
+}

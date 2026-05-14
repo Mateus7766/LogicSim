@@ -52,6 +52,7 @@ body.menu-fechado .editor-bg {
 .toolbar-btn:hover {
     border-color: rgba(59, 130, 246, 0.6);
     color: #7dd3fc;
+    transition: 0.2s ease;
 }
 
 .toolbar-icon {
@@ -314,5 +315,12 @@ body.menu-fechado .editor-bg {
 @media (max-width: 899px) {
     .editor-bg {
         margin: 20px;
+    }
+}
+
+@media(max-width: 500px) {
+    .toolbar-btn {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 1.125rem;
     }
 }

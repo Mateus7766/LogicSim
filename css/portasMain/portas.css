@@ -1,9 +1,9 @@
 .porta-bg {
     background: linear-gradient(160deg, #171b22 0%, #141820 55%, #161a22 100%);
-    margin: 36px 36px 36px 320px;
+    margin: 36px;
     display: grid;
-    place-items: center;
-    width: auto;
+    place-self: center;
+    max-width: 950px;
     min-height: 640px;
     padding: 28px;
     border-radius: 18px;
@@ -102,7 +102,6 @@ body.menu-fechado .porta-bg {
         margin: 24px;
         min-height: auto;
     }
-
     .porta-logicas-listas {
         grid-template-columns: repeat(2, minmax(140px, 1fr));
     }
