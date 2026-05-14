@@ -74,6 +74,16 @@ function createPin({ x, y }, viewBox, type, gateId, index) {
     return pin;
 }
 
+function addDeleteButton(node, gateId) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'node-delete';
+    button.dataset.action = 'delete-node';
+    button.dataset.gateId = gateId;
+    button.textContent = 'x';
+    node.appendChild(button);
+}
+
 export function renderGate(gate, nodeLayer) {
     const node = document.createElement('div');
     node.className = 'node';
@@ -94,19 +104,45 @@ export function renderGate(gate, nodeLayer) {
         graphic.style.height = `${height}px`;
 
         const img = document.createElement('img');
-        img.src = svgGate.src;
+        const inputCount = gate.inputs?.length ?? getInputCount(gate.type);
+        let src = svgGate.src;
+        try {
+            if (inputCount === 3) {
+                src = `./img/portas-fios/porta-${gate.type.toLowerCase()}-tree.svg`;
+            } else if (inputCount >= 4) {
+                src = `./img/portas-fios/porta-${gate.type.toLowerCase()}-for.svg`;
+            }
+        } catch (e) {
+            src = svgGate.src;
+        }
+        img.src = src;
         img.alt = `${gate.type} gate`;
         graphic.appendChild(img);
-
-        svgGate.inputs.forEach((point, idx) => {
-            const pin = createPin(point, svgGate.viewBox, 'input', gate.id, idx);
+        const leftX = svgGate.inputs && svgGate.inputs[0] ? svgGate.inputs[0].x : 15;
+        
+        for (let i = 0; i < inputCount; i += 1) {
+            const spacing = svgGate.viewBox.height / (inputCount + 1);
+            const point = { x: leftX, y: spacing * (i + 1) };
+            const pin = createPin(point, svgGate.viewBox, 'input', gate.id, i);
             graphic.appendChild(pin);
-        });
+        }
 
         const outputPin = createPin(svgGate.output, svgGate.viewBox, 'output', gate.id, 0);
         graphic.appendChild(outputPin);
 
         node.appendChild(graphic);
+        addDeleteButton(node, gate.id);
+    
+        if (!['INPUT', 'OUTPUT', 'NOT'].includes(gate.type)) {
+            const ctrl = document.createElement('div');
+            ctrl.className = 'input-count-control';
+            ctrl.innerHTML = `
+                <button type="button" class="small-btn" data-action="dec-inputs" data-gate-id="${gate.id}">-</button>
+                <span class="input-count" data-gate-id="${gate.id}">${gate.inputs?.length ?? getInputCount(gate.type)}</span>
+                <button type="button" class="small-btn" data-action="inc-inputs" data-gate-id="${gate.id}">+</button>
+            `;
+            node.appendChild(ctrl);
+        }
         nodeLayer.appendChild(node);
         return node;
     }
@@ -169,7 +205,7 @@ export function renderGate(gate, nodeLayer) {
         body.appendChild(row);
         body.appendChild(value);
     } else {
-        const inputCount = getInputCount(gate.type);
+        const inputCount = gate.inputs?.length ?? getInputCount(gate.type);
         for (let i = 0; i < inputCount; i += 1) {
             const row = document.createElement('div');
             row.className = 'pin-row';
@@ -206,6 +242,17 @@ export function renderGate(gate, nodeLayer) {
     }
 
     node.appendChild(body);
+    addDeleteButton(node, gate.id);
+    if (!['INPUT', 'OUTPUT', 'NOT'].includes(gate.type)) {
+        const ctrl = document.createElement('div');
+        ctrl.className = 'input-count-control';
+        ctrl.innerHTML = `
+            <button type="button" class="small-btn" data-action="dec-inputs" data-gate-id="${gate.id}">-</button>
+            <span class="input-count" data-gate-id="${gate.id}">${gate.inputs?.length ?? getInputCount(gate.type)}</span>
+            <button type="button" class="small-btn" data-action="inc-inputs" data-gate-id="${gate.id}">+</button>
+        `;
+        node.appendChild(ctrl);
+    }
     nodeLayer.appendChild(node);
 
     return node;
