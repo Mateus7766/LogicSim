@@ -50,6 +50,8 @@
         <div class="toolbar-group">
             <button class="toolbar-btn" data-add="INPUT">Input</button>
             <button class="toolbar-btn" data-add="OUTPUT">Output</button>
+            <button class="toolbar-btn" data-action="toggle-delete">Deletar</button>
+            <button class="toolbar-btn" data-action="clear-simulator">Limpar</button>
             <button class="toolbar-btn" data-add="AND">
                 <img class="toolbar-icon" src="./img/Portas/porta-and.svg" alt="" aria-hidden="true">
                 AND
@@ -82,7 +84,7 @@
         <div class="toolbar-group">
             <div class="toolbar-expression">
                 <span>Expressão Booleana</span>
-                <strong id="expression-label">-</strong>
+                <div id="expression-label" class="expression-list">-</div>
             </div>
         </div>
     </div>

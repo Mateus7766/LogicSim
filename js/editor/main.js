@@ -8,6 +8,7 @@ const nodeLayer = document.getElementById('node-layer');
 const wireLayer = document.getElementById('wire-layer');
 const handleLayer = document.getElementById('wire-handles');
 const expressionLabel = document.getElementById('expression-label');
+const deleteToggleBtn = document.querySelector('[data-action="toggle-delete"]');
 
 const state = {
     gates: [],
@@ -19,6 +20,15 @@ let dragTarget = null;
 let dragOffset = { x: 0, y: 0 };
 let wiring = null;
 let previewPath = null;
+let deleteMode = false;
+
+function setDeleteMode(enabled) {
+    deleteMode = enabled;
+    workspace.classList.toggle('delete-mode', deleteMode);
+    if (deleteToggleBtn) {
+        deleteToggleBtn.classList.toggle('is-active', deleteMode);
+    }
+}
 
 function addGate(type, x = 120, y = 120, options = {}) {
     const gate = createGate(type, x, y);
@@ -31,6 +41,51 @@ function addGate(type, x = 120, y = 120, options = {}) {
     updateGateValues(gate, node);
     updateAllWires();
     return gate;
+}
+
+function removeGate(gateId) {
+    const node = state.nodes.get(gateId);
+    if (node) {
+        node.remove();
+    }
+
+    state.nodes.delete(gateId);
+    state.gates = state.gates.filter((gate) => gate.id !== gateId);
+
+    const remainingWires = [];
+    state.wires.forEach((wire) => {
+        if (wire.fromId === gateId || wire.toId === gateId) {
+            wire.path?.remove();
+            wire.deleteHandle?.remove();
+            return;
+        }
+        remainingWires.push(wire);
+    });
+    state.wires = remainingWires;
+    updateSimulation();
+}
+
+function clearSimulator() {
+    dragTarget = null;
+    wiring = null;
+    if (previewPath) {
+        previewPath.remove();
+        previewPath = null;
+    }
+
+    state.wires.forEach((wire) => {
+        wire.path?.remove();
+        wire.deleteHandle?.remove();
+    });
+
+    state.gates.forEach((gate) => {
+        state.nodes.get(gate.id)?.remove();
+    });
+
+    state.gates = [];
+    state.wires = [];
+    state.nodes.clear();
+    expressionLabel.textContent = '-';
 }
 
 function addWire(fromId, toId, inputIndex) {
@@ -116,7 +171,29 @@ function handleAddClick(event) {
     updateSimulation();
 }
 
+function handleDeleteToggle(event) {
+    const btn = event.target.closest('[data-action="toggle-delete"]');
+    if (!btn) {
+        return;
+    }
+
+    setDeleteMode(!deleteMode);
+}
+
+function handleClearSimulator(event) {
+    const btn = event.target.closest('[data-action="clear-simulator"]');
+    if (!btn) {
+        return;
+    }
+
+    clearSimulator();
+}
+
 function handleWorkspacePointerDown(event) {
+    if (event.target.closest('[data-action="delete-node"], [data-action="inc-inputs"], [data-action="dec-inputs"], [data-action="toggle-input"], [data-action="set-label"]')) {
+        return;
+    }
+
     const pin = event.target.closest('.pin');
     if (pin && pin.dataset.pinType === 'output') {
         const gateId = pin.dataset.gateId;
@@ -194,10 +271,16 @@ function handleWorkspacePointerUp(event) {
 }
 
 function handleWireClick(event) {
-    const handle = event.target.closest('.wire-delete');
+    const target = event.target;
+    const handle = target.closest?.('.wire-delete')
+        || target.parentElement?.closest?.('.wire-delete')
+        || target.parentNode?.closest?.('.wire-delete');
     if (!handle) {
         return;
     }
+
+    event.preventDefault();
+    event.stopPropagation();
 
     const wireId = handle.dataset.wireId;
     if (!wireId) {
@@ -214,6 +297,12 @@ function handleWireClick(event) {
 }
 
 function handleNodeClick(event) {
+    const deleteBtn = event.target.closest('[data-action="delete-node"]');
+    if (deleteBtn) {
+        removeGate(deleteBtn.dataset.gateId);
+        return;
+    }
+
     const toggle = event.target.closest('[data-action="toggle-input"]');
     if (!toggle) {
         return;
@@ -244,6 +333,80 @@ function handleNodeChange(event) {
     computeExpression();
 }
 
+function changeInputCount(gateId, newCount) {
+    const gate = state.gates.find((g) => g.id === gateId);
+    if (!gate) return;
+    if (['INPUT', 'OUTPUT', 'NOT'].includes(gate.type)) return;
+
+    const clamped = Math.max(2, Math.min(4, newCount));
+    if (clamped === gate.inputs.length) return;
+
+    // remove wires that reference now-invalid input indices
+    const removed = [];
+    state.wires = state.wires.filter((wire) => {
+        if (wire.toId === gateId && wire.inputIndex >= clamped) {
+            // remove visuals
+            wire.path?.remove();
+            wire.deleteHandle?.remove();
+            removed.push(wire);
+            return false;
+        }
+        return true;
+    });
+
+    // resize gate.inputs
+    if (clamped > gate.inputs.length) {
+        while (gate.inputs.length < clamped) gate.inputs.push(0);
+    } else {
+        gate.inputs.length = clamped;
+    }
+
+    // re-render node
+    const oldNode = state.nodes.get(gateId);
+    const wasControlVisible = oldNode?.classList.contains('show-input-control');
+    oldNode?.remove();
+    const newNode = renderGate(gate, nodeLayer);
+    if (wasControlVisible) {
+        newNode.classList.add('show-input-control');
+    }
+    state.nodes.set(gateId, newNode);
+    updateGateValues(gate, newNode);
+    updateAllWires();
+    updateSimulation();
+}
+
+function handleNodeControls(event) {
+    const inc = event.target.closest('[data-action="inc-inputs"]');
+    if (inc) {
+        const gateId = inc.dataset.gateId;
+        const gate = state.gates.find((g) => g.id === gateId);
+        if (gate) changeInputCount(gateId, gate.inputs.length + 1);
+        return;
+    }
+
+    const dec = event.target.closest('[data-action="dec-inputs"]');
+    if (dec) {
+        const gateId = dec.dataset.gateId;
+        const gate = state.gates.find((g) => g.id === gateId);
+        if (gate) changeInputCount(gateId, gate.inputs.length - 1);
+        return;
+    }
+}
+
+function handleNodeDoubleClick(event) {
+    const node = event.target.closest('.node');
+    if (!node) {
+        return;
+    }
+
+    const gate = state.gates.find((item) => item.id === node.dataset.gateId);
+    if (!gate || ['INPUT', 'OUTPUT', 'NOT'].includes(gate.type)) {
+        return;
+    }
+
+    node.classList.toggle('show-input-control');
+}
+
 function isSimple(expr) {
     return /^[A-Z0-9?]+$/i.test(expr);
 }
@@ -267,8 +430,8 @@ function computeExpression() {
         wireMap.set(`${wire.toId}:${wire.inputIndex}`, wire);
     });
 
-    const outputGate = state.gates.find((gate) => gate.type === 'OUTPUT');
-    if (!outputGate) {
+    const outputGates = state.gates.filter((gate) => gate.type === 'OUTPUT');
+    if (outputGates.length === 0) {
         expressionLabel.textContent = '-';
         return;
     }
@@ -309,39 +472,57 @@ function computeExpression() {
                 break;
             }
             case 'AND': {
-                const a = inputExpr(0);
-                const b = inputExpr(1);
-                expr = combine(`${a} · ${b}`, `${a} AND ${b}`);
+                const andParts = [];
+                const gateAnd = gateMap.get(gateId);
+                for (let i = 0; i < (gateAnd.inputs?.length || 2); i += 1) {
+                    andParts.push(inputExpr(i));
+                }
+                expr = combine(andParts.join(' · '), andParts.join(' AND '));
                 break;
             }
             case 'OR': {
-                const a = inputExpr(0);
-                const b = inputExpr(1);
-                expr = combine(`${a} + ${b}`, `${a} OR ${b}`);
+                const orParts = [];
+                const gateOr = gateMap.get(gateId);
+                for (let i = 0; i < (gateOr.inputs?.length || 2); i += 1) {
+                    orParts.push(inputExpr(i));
+                }
+                expr = combine(orParts.join(' + '), orParts.join(' OR '));
                 break;
             }
             case 'NAND': {
-                const a = inputExpr(0);
-                const b = inputExpr(1);
-                expr = combine(`¬(${a} · ${b})`, `${a} NAND ${b}`);
+                const nandParts = [];
+                const gateNand = gateMap.get(gateId);
+                for (let i = 0; i < (gateNand.inputs?.length || 2); i += 1) {
+                    nandParts.push(inputExpr(i));
+                }
+                expr = combine(`¬(${nandParts.join(' · ')})`, nandParts.join(' NAND '));
                 break;
             }
             case 'NOR': {
-                const a = inputExpr(0);
-                const b = inputExpr(1);
-                expr = combine(`¬(${a} + ${b})`, `${a} NOR ${b}`);
+                const norParts = [];
+                const gateNor = gateMap.get(gateId);
+                for (let i = 0; i < (gateNor.inputs?.length || 2); i += 1) {
+                    norParts.push(inputExpr(i));
+                }
+                expr = combine(`¬(${norParts.join(' + ')})`, norParts.join(' NOR '));
                 break;
             }
             case 'XOR': {
-                const a = inputExpr(0);
-                const b = inputExpr(1);
-                expr = combine(`${a} ⊕ ${b}`, `${a} XOR ${b}`);
+                const xorParts = [];
+                const gateXor = gateMap.get(gateId);
+                for (let i = 0; i < (gateXor.inputs?.length || 2); i += 1) {
+                    xorParts.push(inputExpr(i));
+                }
+                expr = combine(xorParts.join(' ⊕ '), xorParts.join(' XOR '));
                 break;
             }
             case 'XNOR': {
-                const a = inputExpr(0);
-                const b = inputExpr(1);
-                expr = combine(`${a} ⊙ ${b}`, `${a} XNOR ${b}`);
+                const xnorParts = [];
+                const gateXnor = gateMap.get(gateId);
+                for (let i = 0; i < (gateXnor.inputs?.length || 2); i += 1) {
+                    xnorParts.push(inputExpr(i));
+                }
+                expr = combine(xnorParts.join(' ⊙ '), xnorParts.join(' XNOR '));
                 break;
             }
             default:
@@ -352,13 +533,42 @@ function computeExpression() {
         return expr;
     };
 
-    expressionLabel.textContent = buildExpr(outputGate.id) || '-';
+    const lines = outputGates.map((gate, index) => {
+        const expr = buildExpr(gate.id) || '-';
+        return `Y${index + 1} = ${expr}`;
+    });
+
+    expressionLabel.innerHTML = lines
+        .map((line) => `<div class="expression-item">${line}</div>`)
+        .join('');
 }
 
 function setupPreset() {
-    const selectedGate = localStorage.getItem('selectedGate');
-    if (selectedGate) {
+    let selectedGate = null;
+    try {
+        selectedGate = sessionStorage.getItem('selectedGate');
+    } catch (error) {
+        selectedGate = null;
+    }
+
+    if (!selectedGate) {
+        try {
+            selectedGate = localStorage.getItem('selectedGate');
+        } catch (error) {
+            selectedGate = null;
+        }
+    }
+
+    try {
+        sessionStorage.removeItem('selectedGate');
+    } catch (error) {
+        // Ignore storage errors.
+    }
+
+    try {
         localStorage.removeItem('selectedGate');
+    } catch (error) {
+        // Ignore storage errors.
     }
 
     const gateType = selectedGate || 'AND';
@@ -379,16 +589,24 @@ function init() {
     document.querySelectorAll('[data-add]').forEach((btn) => {
         btn.addEventListener('click', handleAddClick);
     });
+    if (deleteToggleBtn) {
+        deleteToggleBtn.addEventListener('click', handleDeleteToggle);
+    }
+    document.addEventListener('click', handleClearSimulator);
 
     workspace.addEventListener('pointerdown', handleWorkspacePointerDown);
+    workspace.addEventListener('click', handleWireClick);
     window.addEventListener('pointermove', handleWorkspacePointerMove);
     window.addEventListener('pointerup', handleWorkspacePointerUp);
     nodeLayer.addEventListener('click', handleNodeClick);
     handleLayer.addEventListener('pointerdown', handleWireClick);
+    nodeLayer.addEventListener('click', handleNodeControls);
+    nodeLayer.addEventListener('dblclick', handleNodeDoubleClick);
     nodeLayer.addEventListener('change', handleNodeChange);
 
     setupPreset();
     updateSimulation();
+    setDeleteMode(false);
 }
 
 init();

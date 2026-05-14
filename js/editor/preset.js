@@ -1,15 +1,33 @@
 const gateList = document.getElementById('porta-logicas-listas');
 
-if (gateList) {
-    gateList.addEventListener('click', (event) => {
-        const link = event.target.closest('a[data-gate]');
-        if (!link) {
-            return;
-        }
+function saveSelectedGate(gateType) {
+    if (!gateType) {
+        return;
+    }
 
-        const gateType = link.dataset.gate;
-        if (gateType) {
-            localStorage.setItem('selectedGate', gateType);
-        }
-    });
+    try {
+        sessionStorage.setItem('selectedGate', gateType);
+    } catch (error) {
+       
+    }
+
+    try {
+        localStorage.setItem('selectedGate', gateType);
+    } catch (error) {
+        
+    }
+}
+
+function handleGateSelect(event) {
+    const link = event.target.closest('a[data-gate]');
+    if (!link) {
+        return;
+    }
+
+    saveSelectedGate(link.dataset.gate);
+}
+
+if (gateList) {
+    gateList.addEventListener('pointerdown', handleGateSelect, { capture: true });
+    gateList.addEventListener('click', handleGateSelect);
 }
